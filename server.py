@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi import HTTPException
+
 app = FastAPI()
 
 @app.get("/")
@@ -18,15 +20,12 @@ posts = [
 ]
 
 
-
-
-@app.post("/posts")
+@app.post("/posts", status_code=201)
 def buat_post(data: dict):
-    id_baru = posts[-1]["id"] + 1 if posts else 1
-    data["id"] = id_baru
-    posts.append(data)
-    return data
-
+        id_baru = posts[-1]["id"] + 1 if posts else 1
+        data["id"] = id_baru
+        posts.append(data)
+        return data
 
 
 @app.get("/posts")
@@ -39,4 +38,38 @@ def ambil_post(post_id: int):
     for post in posts:
         if post["id"] == post_id:
             return post
-    return {"pesan": "Post tidak ditemukan"}
+    raise HTTPException(status_code=404, detail="post gaditemukan")
+
+
+
+@app.put("/posts/{post_id}")
+def update_post(post_id: int, data: dict):
+    for post in posts:
+        
+    # cari post berdasarkan ID
+     if post["id"] == post_id:
+
+        # jika ketemu, update judul dan isi
+        post["judul"] = data["judul"]
+        post["isi"] = data["isi"]
+        # return post yang sudah diupdate
+        return post
+
+    
+     raise HTTPException(status_code=404, detail="post gaditemukan")
+
+
+@app.delete("/posts/{post_id}")
+def hapus_post(post_id: int):
+    for index, post in enumerate(posts):
+        if post["id"] == post_id:
+            posts.pop(index)
+            return {"pesan": "Post dihapus"}
+        
+    raise HTTPException(status_code=404, detail="post gaditemukan")
+
+
+
+
+
+
